@@ -10,14 +10,27 @@
   function renderHero() {
     document.getElementById("hero-name").textContent = data.name;
     document.getElementById("hero-title").textContent = data.title;
-    document.getElementById("hero-headline").textContent = data.headline;
+    document.getElementById("hero-tagline").textContent = data.tagline;
+
+    document.getElementById("hero-badges").innerHTML = data.badges
+      .map((b) => `<span class="hero__badge">${b}</span>`)
+      .join("");
+
+    document.getElementById("hero-stats").innerHTML = data.stats
+      .map(
+        (s) => `
+        <div class="hero__stat">
+          <span class="hero__stat-value">${s.value}</span>
+          <span class="hero__stat-label">${s.label}</span>
+        </div>`
+      )
+      .join("");
 
     const socialContainer = document.getElementById("hero-social");
     const links = [
       { href: data.social.github, icon: "fab fa-github", label: "GitHub" },
       { href: data.social.linkedin, icon: "fab fa-linkedin", label: "LinkedIn" },
       { href: `mailto:${data.email}`, icon: "fas fa-envelope", label: "Email" },
-      { href: `tel:${data.phone}`, icon: "fas fa-phone", label: "Phone" },
       { href: data.social.graphics, icon: "fas fa-palette", label: "Graphics Portfolio" },
     ];
 
@@ -30,7 +43,10 @@
   }
 
   function renderAbout() {
-    document.getElementById("about-text").textContent = data.about;
+    const paragraphs = data.about.trim().split(/\n\n+/);
+    document.getElementById("about-text").innerHTML = paragraphs
+      .map((p) => `<p>${p.trim()}</p>`)
+      .join("");
 
     const edu = data.education;
     document.getElementById("education-content").innerHTML = `
@@ -55,8 +71,8 @@
   function renderSkills() {
     document.getElementById("skills-technical").innerHTML = data.skills.technical
       .map(
-        (group) => `
-        <div class="skill-card reveal">
+        (group, i) => `
+        <div class="skill-card reveal" style="--reveal-delay:${i * 80}ms">
           <h3 class="skill-card__category">${group.category}</h3>
           <div class="skill-card__tags">
             ${group.items.map((s) => `<span class="skill-tag">${s}</span>`).join("")}
@@ -70,61 +86,95 @@
       .join("");
   }
 
-  function renderProjects() {
-    const icons = {
-      MediLink: "fa-heart-pulse",
-      "Green House": "fa-utensils",
-      Shirsh: "fa-plane",
-      "CS National": "fa-graduation-cap",
-      "The Row": "fa-hotel",
-      Weather: "fa-cloud-sun",
-    };
+  const projectIcons = {
+    MediLink: "fa-heart-pulse",
+    "Green House": "fa-utensils",
+    Shirsh: "fa-plane",
+    "CS National": "fa-graduation-cap",
+    "The Row": "fa-hotel",
+    Weather: "fa-cloud-sun",
+  };
 
-    function getIcon(title) {
-      const key = Object.keys(icons).find((k) => title.includes(k));
-      return icons[key] || "fa-code";
-    }
+  function getProjectIcon(title) {
+    const key = Object.keys(projectIcons).find((k) => title.includes(k));
+    return projectIcons[key] || "fa-code";
+  }
+
+  function buildProjectCard(p) {
+    return `
+      <article class="project-card reveal${p.featured ? " project-card--featured" : ""}" data-filter="${p.featured ? "featured" : "all"}">
+        <div class="project-card__inner">
+          <div class="project-card__header">
+            <div class="project-card__icon" style="background:${p.color}">
+              <i class="fas ${getProjectIcon(p.title)}" aria-hidden="true"></i>
+            </div>
+            ${p.featured ? '<span class="project-card__badge">Featured</span>' : ""}
+          </div>
+          <div class="project-card__body">
+            <h3 class="project-card__title">${p.title}</h3>
+            <p class="project-card__meta">${p.role} · ${p.timeline}</p>
+            <p class="project-card__desc">${p.description}</p>
+            <ul class="project-card__features">
+              ${p.features.map((f) => `<li>${f}</li>`).join("")}
+            </ul>
+            <div class="project-card__stack">
+              ${p.stack.map((t) => `<span class="stack-tag">${t}</span>`).join("")}
+            </div>
+            <p class="project-card__achievement">${p.achievement}</p>
+          </div>
+          <div class="project-card__footer">
+            ${
+              p.live
+                ? `<a href="${p.live}" class="btn btn--ghost" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt" aria-hidden="true"></i> Live Demo</a>`
+                : ""
+            }
+            <a href="${p.github}" class="btn btn--ghost" target="_blank" rel="noopener noreferrer"><i class="fab fa-github" aria-hidden="true"></i> GitHub</a>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function renderProjects() {
+    const featuredCount = data.projects.filter((p) => p.featured).length;
+
+    document.getElementById("projects-filter").innerHTML = `
+      <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All (${data.projects.length})</button>
+      <button class="filter-btn" data-filter="featured" role="tab" aria-selected="false">Featured (${featuredCount})</button>
+    `;
 
     document.getElementById("projects-grid").innerHTML = data.projects
-      .map(
-        (p) => `
-      <article class="project-card reveal${p.featured ? " project-card--featured" : ""}">
-        <div class="project-card__header">
-          <div class="project-card__icon" style="background:${p.color}">
-            <i class="fas ${getIcon(p.title)}" aria-hidden="true"></i>
-          </div>
-          ${p.featured ? '<span class="project-card__badge">Featured</span>' : ""}
-        </div>
-        <div class="project-card__body">
-          <h3 class="project-card__title">${p.title}</h3>
-          <p class="project-card__meta">${p.role} · ${p.timeline}</p>
-          <p class="project-card__desc">${p.description}</p>
-          <ul class="project-card__features">
-            ${p.features.map((f) => `<li>${f}</li>`).join("")}
-          </ul>
-          <div class="project-card__stack">
-            ${p.stack.map((t) => `<span class="stack-tag">${t}</span>`).join("")}
-          </div>
-          <p class="project-card__achievement">${p.achievement}</p>
-        </div>
-        <div class="project-card__footer">
-          ${
-            p.live
-              ? `<a href="${p.live}" class="btn btn--ghost" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt" aria-hidden="true"></i> Live Demo</a>`
-              : ""
-          }
-          <a href="${p.github}" class="btn btn--ghost" target="_blank" rel="noopener noreferrer"><i class="fab fa-github" aria-hidden="true"></i> GitHub</a>
-        </div>
-      </article>`
-      )
+      .map((p) => buildProjectCard(p))
       .join("");
+
+    initProjectFilter();
+  }
+
+  function initProjectFilter() {
+    const filterBtns = document.querySelectorAll(".filter-btn");
+    const cards = document.querySelectorAll(".project-card");
+
+    filterBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const filter = btn.dataset.filter;
+
+        filterBtns.forEach((b) => {
+          b.classList.toggle("active", b === btn);
+          b.setAttribute("aria-selected", String(b === btn));
+        });
+
+        cards.forEach((card) => {
+          const show = filter === "all" || card.dataset.filter === filter;
+          card.classList.toggle("hidden", !show);
+        });
+      });
+    });
   }
 
   function renderExperience() {
     document.getElementById("experience-timeline").innerHTML = data.experience
       .map(
-        (exp) => `
-      <div class="timeline__item reveal">
+        (exp, i) => `
+      <div class="timeline__item reveal" style="--reveal-delay:${i * 100}ms">
         <div class="timeline__dot" aria-hidden="true"></div>
         <div class="timeline__card">
           <h3 class="timeline__title">${exp.title}</h3>
@@ -141,13 +191,13 @@
 
   function renderCertifications() {
     document.getElementById("certifications-grid").innerHTML = data.certifications
-      .map((cert) => {
+      .map((cert, i) => {
         const statusClass =
           cert.status === "Completed"
             ? "cert-card__status--completed"
             : "cert-card__status--ongoing";
         return `
-        <div class="cert-card reveal">
+        <div class="cert-card reveal" style="--reveal-delay:${i * 80}ms">
           <h3 class="cert-card__name">${cert.name}</h3>
           <div class="cert-card__meta">
             <span class="cert-card__issuer">${cert.issuer}</span>
@@ -184,6 +234,19 @@
       .map(
         (l) =>
           `<a href="${l.href}" target="_blank" rel="noopener noreferrer" aria-label="${l.label}"><i class="${l.icon}" aria-hidden="true"></i></a>`
+      )
+      .join("");
+
+    document.getElementById("references-list").innerHTML = data.references
+      .map(
+        (ref) => `
+        <div class="reference-card">
+          <p class="reference-card__name">${ref.name}</p>
+          <div class="reference-card__contact">
+            <a href="tel:${ref.phone.replace(/\s/g, "")}"><i class="fas fa-phone" aria-hidden="true"></i> ${ref.phone}</a>
+            <a href="mailto:${ref.email}"><i class="fas fa-envelope" aria-hidden="true"></i> ${ref.email}</a>
+          </div>
+        </div>`
       )
       .join("");
   }
@@ -239,30 +302,34 @@
 
   const menuToggle = document.getElementById("menu-toggle");
   const navLinks = document.getElementById("nav-links");
+  const navOverlay = document.getElementById("nav-overlay");
   const menuIcon = menuToggle.querySelector("i");
 
   function closeMenu() {
     navLinks.classList.remove("open");
+    navOverlay.classList.remove("visible");
     menuToggle.setAttribute("aria-expanded", "false");
     menuIcon.classList.replace("fa-times", "fa-bars");
+    document.body.style.overflow = "";
+  }
+
+  function openMenu() {
+    navLinks.classList.add("open");
+    navOverlay.classList.add("visible");
+    menuToggle.setAttribute("aria-expanded", "true");
+    menuIcon.classList.replace("fa-bars", "fa-times");
+    document.body.style.overflow = "hidden";
   }
 
   menuToggle.addEventListener("click", () => {
-    const isOpen = navLinks.classList.toggle("open");
-    menuToggle.setAttribute("aria-expanded", String(isOpen));
-    menuIcon.classList.toggle("fa-bars", !isOpen);
-    menuIcon.classList.toggle("fa-times", isOpen);
-  });
-
-  document.addEventListener("click", (e) => {
-    if (
-      navLinks.classList.contains("open") &&
-      !navLinks.contains(e.target) &&
-      !menuToggle.contains(e.target)
-    ) {
+    if (navLinks.classList.contains("open")) {
       closeMenu();
+    } else {
+      openMenu();
     }
   });
+
+  navOverlay.addEventListener("click", closeMenu);
 
   navLinks.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", closeMenu);
@@ -284,16 +351,31 @@
 
   const sections = document.querySelectorAll("section[id]");
   const navItems = navLinks.querySelectorAll("a");
+  const header = document.querySelector(".site-header");
+  const scrollProgress = document.getElementById("scroll-progress");
+  const backToTop = document.getElementById("back-to-top");
 
-  function updateActiveNav() {
-    const scrollY = window.scrollY + varHeaderOffset();
+  function headerOffset() {
+    return parseInt(getComputedStyle(document.documentElement).getPropertyValue("--header-height")) || 72;
+  }
+
+  function updateOnScroll() {
+    const scrollY = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollY / docHeight) * 100 : 0;
+
+    scrollProgress.style.width = `${progress}%`;
+    header.classList.toggle("scrolled", scrollY > 10);
+    backToTop.classList.toggle("visible", scrollY > 400);
+
+    const offset = scrollY + headerOffset() + 20;
 
     sections.forEach((section) => {
-      const top = section.offsetTop - 100;
+      const top = section.offsetTop;
       const height = section.offsetHeight;
       const id = section.getAttribute("id");
 
-      if (scrollY >= top && scrollY < top + height) {
+      if (offset >= top && offset < top + height) {
         navItems.forEach((link) => {
           link.classList.toggle("active", link.getAttribute("href") === `#${id}`);
         });
@@ -301,9 +383,9 @@
     });
   }
 
-  function varHeaderOffset() {
-    return parseInt(getComputedStyle(document.documentElement).getPropertyValue("--header-height")) || 72;
-  }
+  backToTop.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 
   /* ---- Scroll reveal ---- */
 
@@ -321,31 +403,50 @@
           }
         });
       },
-      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
     );
 
     document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
   }
 
-  /* ---- Header shadow on scroll ---- */
-
-  const header = document.querySelector(".site-header");
-
-  function updateHeader() {
-    header.style.boxShadow = window.scrollY > 10 ? "var(--shadow-md)" : "none";
-    updateActiveNav();
-  }
-
   /* ---- Contact form ---- */
 
-  document.getElementById("contact-form").addEventListener("submit", (e) => {
+  const form = document.getElementById("contact-form");
+
+  function showError(fieldId, message) {
+    const input = document.getElementById(fieldId);
+    const error = document.getElementById(`${fieldId}-error`);
+    input.classList.add("invalid");
+    error.textContent = message;
+  }
+
+  function clearErrors() {
+    form.querySelectorAll("input, textarea").forEach((el) => el.classList.remove("invalid"));
+    form.querySelectorAll(".form-error").forEach((el) => (el.textContent = ""));
+  }
+
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const form = e.target;
+    clearErrors();
+
     const name = form.name.value.trim();
     const email = form.email.value.trim();
     const message = form.message.value.trim();
+    let valid = true;
 
-    if (!name || !email || !message) return;
+    if (!name) {
+      showError("name", "Please enter your name.");
+      valid = false;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError("email", "Please enter a valid email address.");
+      valid = false;
+    }
+    if (!message) {
+      showError("message", "Please enter a message.");
+      valid = false;
+    }
+    if (!valid) return;
 
     const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
     const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
@@ -357,6 +458,6 @@
 
   initTheme();
   renderAll();
-  window.addEventListener("scroll", updateHeader, { passive: true });
-  updateHeader();
+  window.addEventListener("scroll", updateOnScroll, { passive: true });
+  updateOnScroll();
 })();

@@ -7,6 +7,21 @@ const PORTFOLIO = {
   title: "Front-End Developer",
   tagline:
     "Building modern web applications that bridge customer needs with technical solutions.",
+
+  badges: [
+    "React",
+    "Node.js",
+    "TypeScript",
+    "Tailwind CSS",
+    "Huawei 5G Certified",
+  ],
+
+  stats: [
+    { value: "6+", label: "Projects" },
+    { value: "3.5", label: "CGPA" },
+    { value: "5", label: "Certifications" },
+    { value: "2+", label: "Years Experience" },
+  ],
   email: "teklemintesnot2@gmail.com",
   phone: "+251987950887",
   location: "Addis Ababa, Ethiopia",
@@ -175,7 +190,7 @@ I am passionate about building modern web applications, bridging customer needs 
         "JWT",
       ],
       achievement:
-        "Built and deployed a production-ready system for a real business",
+        "Built and deployed a production-ready system for a real business via GitHub Actions (Azure Web Apps)",
       live: null,
       github: "https://github.com/Mintesnoterstu/Green",
       featured: true,
