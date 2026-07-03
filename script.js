@@ -3,6 +3,11 @@
 (function () {
   "use strict";
 
+  if (typeof PORTFOLIO === "undefined") {
+    console.error("Portfolio data failed to load. Check that data.js is linked correctly.");
+    return;
+  }
+
   const data = PORTFOLIO;
 
   /* ---- Render content from data.js ---- */
@@ -269,7 +274,6 @@
     renderCertifications();
     renderContact();
     renderFooter();
-    observeRevealElements();
   }
 
   /* ---- Theme toggle ---- */
@@ -391,8 +395,21 @@
 
   let revealObserver;
 
+  function isInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    return rect.top < window.innerHeight && rect.bottom > 0;
+  }
+
   function observeRevealElements() {
     if (revealObserver) revealObserver.disconnect();
+
+    const revealElements = document.querySelectorAll(".reveal");
+
+    revealElements.forEach((el) => {
+      if (isInViewport(el)) {
+        el.classList.add("visible");
+      }
+    });
 
     revealObserver = new IntersectionObserver(
       (entries) => {
@@ -403,10 +420,14 @@
           }
         });
       },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.05, rootMargin: "0px 0px -20px 0px" }
     );
 
-    document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
+    revealElements.forEach((el) => {
+      if (!el.classList.contains("visible")) {
+        revealObserver.observe(el);
+      }
+    });
   }
 
   /* ---- Contact form ---- */
@@ -454,10 +475,23 @@
     form.reset();
   });
 
+  function enableRevealAnimations() {
+    document.documentElement.classList.add("js-enabled");
+    observeRevealElements();
+  }
+
   /* ---- Init ---- */
 
   initTheme();
-  renderAll();
+
+  try {
+    renderAll();
+    enableRevealAnimations();
+  } catch (err) {
+    console.error("Portfolio render error:", err);
+    document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
+  }
+
   window.addEventListener("scroll", updateOnScroll, { passive: true });
   updateOnScroll();
 })();

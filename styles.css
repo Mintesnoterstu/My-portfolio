@@ -606,18 +606,26 @@ ul {
   margin: 0 auto;
 }
 
-/* ---- Reveal animations ---- */
+/* ---- Reveal animations (progressive — visible by default, animate when JS runs) ---- */
 
 .reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  transition-delay: var(--reveal-delay, 0ms);
+  opacity: 1;
+  transform: none;
 }
 
-.reveal.visible {
+html.js-enabled .reveal:not(.visible) {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+html.js-enabled .reveal.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+html.js-enabled .reveal {
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition-delay: var(--reveal-delay, 0ms);
 }
 
 /* ---- About ---- */
@@ -1584,7 +1592,9 @@ ul {
     transition-duration: 0.01ms !important;
   }
 
-  .reveal {
+  .reveal,
+  html.js-enabled .reveal:not(.visible),
+  html.js-enabled .reveal.visible {
     opacity: 1;
     transform: none;
   }
